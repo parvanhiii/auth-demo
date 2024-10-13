@@ -18,6 +18,14 @@ app.set('views', 'views');
 app.use(express.urlencoded({extended:true}));
 app.use(session({secret:'uptonogood'}));
 
+ //if not logged in redirect to login
+const requireLogin=(req,res,next)=>{
+    if(!req.session.user_id){
+       return res.redirect('/login')
+    }
+     next();  
+}
+
 app.get('/', (req, res) => {
     res.send('this is the home page'); 
 });
@@ -53,12 +61,15 @@ app.post('/login', async(req, res) => {
   }
 });
 
+app.post('/logout',(req,res)=>{
+    //req.session.user_id=null;
+    req.session.destroy();
+    res.redirect('/login');
+})
 
-app.get('/secret', (req, res) => {
-    if(!req.session.user_id){
-        return res.redirect('/login')
-    }
-    res.send('This is a secret page! Only logged in users can see this.');
+app.get('/secret', requireLogin,(req, res) => {
+    
+    res.render('secret')
 });
 
 
